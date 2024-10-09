@@ -304,6 +304,37 @@ int main(int argc, char **argv) {
 }
 ```
 
+3. Compile and run the program:
+```shell
+gcc -o triangle triangle.c -lGL -lglut -lGLU -lm
+```
+
+You should now see an orange triangle with a black background:
+<img src="assets/triangle-demo.png" style="background-color: white">
+
+##### Triangle strip program
+
+Let's make another program and call it `triangle_strip.c`.
+
+We'll repeat the same procedure as above but now, we'll change the argument for the argument passed to `glBegin` from `GL_TRIANGLES` to `GL_TRIANGLE_STRIP`.  Then, we'll change the vertices to the following:
+
+
+```c  
+    glVertex2f(-0.8f, 0.5f); // Vertex 1  
+    glVertex2f(-0.6f, -0.5f); // Vertex 2  
+    glVertex2f(-0.4f, 0.5f); // Vertex 3  
+    glVertex2f(-0.2f, -0.5f); // Vertex 4  
+    glVertex2f(0.0f, 0.5f); // Vertex 5
+```
+
+You should get something that looks like a trapezoid. If you would like to outline it, simply copy the vertices and past them in a new `glBegin` with the arguments `GL_LINE_LOOP`.
+
+Now, by removing vertices, we can get a variety of different shapes. I removed vertex 4 and 5, then put vertex 4 back. This resulted in the following:
+
+<img src="assets/triangle-strip-demo.png" style="background-color: white">
+
+If you're wondering how i moved things around, then worry not. We will go over it in the transformation section.
+
 
 ## Meshes
 
