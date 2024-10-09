@@ -245,12 +245,9 @@ Once something has been rendered, you need to refresh the buffer in some way.
 
 <img src="assets/point-and-line-primitives.png" style="background-color: white">
 
-* The width for line primitives can be set by calling:
-    ```C++
-    glLineWidth(width)
-    ```
-    * The line width is always specified in pixels.
-    * It is not subject to scaling by transformations.
+##### Drawing outlines:
+
+Drawing outlines is quite simple in OpenGL. The process involves passing your existing vertices to a `GL_LINE_LOOP`. You can then increase or decrease the width of the line using `glLineWidth`. 
 
 #### Drawing triangle segments
 
