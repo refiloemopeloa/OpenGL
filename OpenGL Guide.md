@@ -335,6 +335,159 @@ Now, by removing vertices, we can get a variety of different shapes. I removed v
 
 If you're wondering how i moved things around, then worry not. We will go over it in the transformation section.
 
+#### Drawing circles
+
+OpenGL does not explicitly have a way to draw circles. Instead, we can do this using parametrization:
+
+```C
+void circle(radius, angle, slices) {
+	glBegin( GL_LINE_LOOP );
+	for (i = 0; i < slices; i++) {
+	    angle = 6.2832 * i / 64;  // 6.2832 represents 2*PI
+	    x = radius * cos(angle);
+	    y = radius * sin(angle);
+	    glVertex2f( x, y );
+	}
+	glEnd();
+}
+```
+
+### Colour
+
+Colour in OpenGL is typically specified using RGBA (Red, Green, Blue, Alpha) values. Alpha represents the transparency of the colour.
+
+Colour functions have the following structure:
+
+```c
+glColor#*()
+```
+
+where `#` represents how many arguments we're passing and `*` represents what data type we're passing.
+
+* `#`
+	* `3`: RGB
+	* `4`: RGBA
+* `*`
+	* can take
+		* `f`: float
+			* `f` ranges between 0 and 1.
+		* `d`: double
+			* `d` ranges between 0 and 1.
+		* `ub`: unsigned byte
+			* `ub` allows you to use a range from 0 to 255.
+
+### Using Arrays
+
+It might be inefficient to manually write out your vertices when drawing, especially with large scale graphics. The solution to this is to use an array:
+
+```c
+float coords[] = { -0.5, -0.5,  0.5, -0.5,  0.5, 0.5,  -0.5, 0.5 };
+
+glBegin(GL_TRIANGLE_FAN);
+glVertex2fv(coords);      // Uses coords[0] and coords[1].
+glVertex2fv(coords + 2);  // Uses coords[2] and coords[3].
+glVertex2fv(coords + 4);  // Uses coords[4] and coords[5].
+glVertex2fv(coords + 6);  // Uses coords[6] and coords[7].
+glEnd();
+```
+
+Notice that we are using pointer arithmetic to navigate the array.
+
+### Using Pointers
+
+A more elegant solution is to use pointers:
+
+```C
+GLfloat vertices[] = {
+    0.0f, 1.0f, 0.0f,
+    -1.0f, -1.0f, 0.0f,
+    1.0f, -1.0f, 0.0f
+};
+glEnableClientState(GL_VERTEX_ARRAY);
+glVertexPointer(3, GL_FLOAT, 0, vertices);
+glDrawArrays(GL_TRIANGLES, 0, 3);
+glDisableClientState(GL_VERTEX_ARRAY);
+```
+
+where:
+
+```C
+void **glVertexPointer**(GLint size, GLenum type, GLsizei stride, const void* pointer);
+```
+
+* `size`
+	* Specifies the number of coordinates per vertex. Must be 2, 3, or 4. The initial value is 4.
+
+* `type`
+	* Specifies the data type of each coordinate in the array. 
+	* Symbolic constants `GL_SHORT`, `GL_INT`, `GL_FLOAT`, or `GL_DOUBLE` are accepted.
+	* The initial value is `GL_FLOAT`.
+
+* `stride`
+	* Specifies the byte offset between consecutive vertices. 
+	* If _`stride`_ is 0, the vertices are understood to be tightly packed in the array. 
+	* The initial value is 0.
+
+* `pointer`
+	* Specifies a pointer to the first coordinate of the first vertex in the array. 
+	* The initial value is 0.
+
+### Clearing the scene
+
+Clearing the screen before drawing a new frame is crucial to remove artifacts from the previous frame. A common operation is to clear the drawing area by filling it with some background color.
+
+1. Set the colour:
+
+```C
+glClearColor(r,g,b,a);
+```
+
+2. Clear the buffer:
+
+```C
+glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+```
+
+## Transformation Pipeline
+
+### Clip coordinates
+
+#### Projection
+
+To simulate projection perspective, we use the following code:
+
+1. Enable `GL_PROJECTION`:
+```C
+glMatrixMode(GL_PROJECTION);
+```
+
+2. Load identity matrix:
+
+```C
+glLoadIdentity();
+```
+
+3. Create `frustrum`, truncated pyramid from camera to world:
+
+```C
+glFrustum( xmin, xmax, ymin, ymax, near, far );
+```
+
+4. Restore `GL_MODELVIEW`:
+
+```C
+glMatrixMode(GL_MODELVIEW);
+```
+
+#### Orthographic
+
+To simulate orthographic perspective, we change a few things from above:
+
+3. Create `rectangular solid`, from camera to world:
+
+```C
+glOrtho( xmin, xmax, ymin, ymax, near, far );
+```
 
 ## Meshes
 
