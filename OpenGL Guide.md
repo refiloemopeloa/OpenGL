@@ -243,7 +243,7 @@ Once something has been rendered, you need to refresh the buffer in some way.
 * `GL_LINE_LOOP`:
     * Adds an extra line segment from the final vertex back to the first vertex.
 
-<img src="assets/point-and-line-primitives.png">
+<img src="assets/point-and-line-primitives.png" style="background-color: white">
 
 * The width for line primitives can be set by calling:
     ```C++
