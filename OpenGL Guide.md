@@ -304,3 +304,74 @@ int main(int argc, char **argv) {
 }
 ```
 
+
+## Meshes
+
+A mesh is simply a combination of faces that when put together in some complex geometry, represent some complex object.
+
+### Index Faced Sets
+
+We can represent all the vertices and faces of a mesh in an array.
+
+#### Vertex array
+
+The vertex array contains all the vertexes of the mesh.
+
+#### Face array
+
+The face array contains entries that represent the indexes of vertexes that make one face.
+
+Let us look at an example:
+
+##### Cube Demo
+
+Let us start by drawing the cube on paper and thinking about where our coordinates will be. Do not fret over the specificity of the coordinates as we can just transform the resulting cube. Use a range between 0 and 1 for each coordinate value.
+
+You should have a cube with 8 vertexes. Here are my coordinates:
+
+```C
+float vertex_array[][3] = {  
+    {0.5, 0.5, 0}, // vertex 0  
+    {0.5, 1.0, 0}, // vertex 1  
+    {1.0, 1.0, 0}, // vertex 2  
+    {1.0, 0.5, 0}, // vertex 3  
+    {0.5, 1, 0.5}, // 4  
+    {0.5, 0.5, 0.5}, // 5  
+    {1, 1, 0.5}, // 6  
+    {1, 0.5, 0.5} // 7  
+};
+
+int vertex_count = 8;    //we will use this later
+```
+
+Now, let's think about the faces of the cube. The face values you plot will change depending on how you want to render the cube. Let us begin by using lines to render the cube. Here are my faces:
+
+```C
+int outlined_face_count = 6;  
+  
+int outlined_face_array[][4] = {  
+    {0, 1, 2, 3}, // 0  
+    {0, 5, 4, 1}, // 1  
+    {0, 5, 7, 3}, // 2  
+    {6, 2, 3, 7}, // 3  
+    {6, 4, 5, 7}, // 4  
+    {6, 2, 1, 4} // 5  
+};
+```
+
+Once we've initialised our cube, let us draw it:
+
+```C
+void outlined_cube() {  
+    int v;  //represents vertex on a face
+    float *vCoords;  //represents the vertex coords that correspond to v
+    glColor3ub(255, 255, 255);  //make the outline white
+    for (int face = 0; face < outlined_face_count; face++) {  
+        glBegin(GL_LINE_LOOP);  
+            for (int vertex = 0; vertex < 4; vertex++) {  
+                v = outlined_face_array[face][vertex];  
+                vCoords = vertex_array[v];  
+                glVertex3fv(vCoords);  
+        glEnd();  
+    }}
+```
