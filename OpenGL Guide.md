@@ -264,9 +264,9 @@ Drawing outlines is quite simple in OpenGL. The process involves passing your ex
           the new triangle is made by connecting the new vertex to the previous vertex and to the very first vertex that
           was specified (vertex “A” in the picture).
 
-<img src="assets/triangle-primitives.png">
+<img src="assets/triangle-primitives.png" style="background-color: white">
 
-### Triangle demo
+##### Triangle demo
 
 Lets draw a triangle on our hello_OpenGL demo.
 
