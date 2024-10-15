@@ -560,6 +560,8 @@ void outlined_cube() {
 
 ##### Stellated Dodecahedron Demo
 
+Try implementing your own stellated dodecahedron using the IFSs below:
+
 ```C
 double dodecVertices[][3] = {
 
@@ -752,49 +754,144 @@ int dodecTriangles[][3] = {
     {19, 14, 31},
 
     {14, 17, 31}
-
-void stellatedDodecahedron() {
-
-    int v;
-
-    double *vCoords;
-
-    glPushMatrix();
-
-        glScaled(4, 4, 4);
-
-        glColor3f(1, 1, 1);
-
-        for (int i = 0; i < 60; i++) {
-
-            glBegin(GL_LINE_LOOP);
-
-            for (int j = 0; j < 3; j++) {
-
-                v = dodecTriangles[i][j];    // get the vertexes of a face
-
-                vCoords = dodecVertices[v];    // get the coords of that vertex
-
-                glVertex3dv(vCoords);    //draw that vertex
-
-            }
-
-            glEnd();
-
-        }
-
-    glPopMatrix();
-
-}
-
-};
 ```
 
 
+You should get something that looks like this:
 
+<img src = "assets/stellated-dodecahedron.gif" style="background-color: white">
 
+ I've added different colours to each face to give the illusion of 3D. See if you can do the same. 
+
+## Data structures
+
+OpenGL offers us a few data structures to work with, such as matrices, vectors, and buffer objects.
+
+### glMatrix
+
+`glMatrix` is a popular library for handling matrix and vector operations in WebGL. It is optimized for high performance in graphics computations. Here's an example of an operation you might perform using this library:
+
+```c
+const projection = mat4.create();    // projection matrix
+const modelview = mat4.create();     // modelview matrix
+const modelviewProj = mat4.create(); // combined transformation matrix
+const normalMatrix = mat3.create(); // matrix, derived from modelview matrix, for transforming normal vectors
+
+mat4.multiply( modelviewProj, projection, modelview ); //Multiply the modelview and projection transforms to get the combined transform
+```
+
+### Vertex Buffer Object
+
+A vertex buffer object is a block of memory that can hold the coordinates or other attributes for a set of vertices,  and make it possible to send such data to the GPU once and reuse it several times. It can be stored on the GPU. 
+
+It's important to note that the buffers must be one-dimensional arrays. In OpenGL, they are accessed using the following:
+
+#### glDrawArrays
+
+`glDrawArrays` allows you to render primitives from arrays data. This reduces the overall code you have to type. You can think of this as collapsing a bunch of `glVertex3f()` calls into one call. 
+
+Before calling the function, you need to initialize a few things. First is the initialization of the array. lets create an array with coordinates for vertices in a 2D plane:
+
+```C
+float coords[8] = { -0.5,-0.5, 0.5,-0.5, 0.5,0.5, -0.5,0.5 };
+```
+
+Then, we need to tell OpenGL where to find the data and how to work with it using:
+
+```C
+void glVertexPointer(int size, int type, int stride, void* array)
+```
+
+* `size`
+	* number of coordinates per vertex.
+* `type`
+	* data type of the values in the array.
+	* possible values are
+		* `GL_INT`
+		* `GL_FLOAT`
+		* `GL_DOUBLE`
+* `stride`
+	* stride needed to access next value.
+	* distance is given in bytes.
+	* 0 indicates consecutive locations.
+* `array`
+	* pointer to the first value in the array.
+
+Finally, to actually use the buffer, we need to enable the use of the array by using:
+
+```C
+glEnableClientState(GL_VERTEX_ARRAY);
+```
+
+Without this, OpenGL will simply ignore the array. To disable it, we can use `glDisableClientState`.
+
+Now, to use it, we call the function with the following arguments:
+
+```c
+void glDrawArrays(int primitiveType, int firstVertex, int vertexCount);
+```
+
+* `primitiveType`
+	* Specifies primitive to render.
+* `firstVertex`
+	* Specifies the number of the first vertex.\
+	* This isn't the array index. To get the corresponding array index, multiply the vertex number by the number of coordinates per vertex, which is set in `glVertexPointer`.
+* `vertexCount`
+	* Specifies the number of vertexes to be rendered.
+
+You can also pass multiple arrays into the function, as long as they are all related. For example, you can also pass in an array of colours for each vertex. When this is done, OpenGL will process both the vertexes and their associated colours at the same time. Here's an example:
+
+```C
+float coords[6] = { -0.9,-0.9,  0.9,-0.9,  0,0.7 }; // two coords per vertex.
+float colors[9] = { 1,0,0,  0,1,0,  0,0,1 };  // three RGB values per vertex.
+
+glVertexPointer( 2, GL_FLOAT, 0, coords );  // Set data type and location.
+glColorPointer( 3, GL_FLOAT, 0, colors );
+
+glEnableClientState( GL_VERTEX_ARRAY );  // Enable use of arrays.
+glEnableClientState( GL_COLOR_ARRAY );
+
+glDrawArrays( GL_TRIANGLES, 0, 3 ); // Use 3 vertices, starting with vertex 0.
+```
+
+This draws the following:
+
+<img src = "assets/glDrawArrays-triangle.png" style="background-color: white">
+
+#### glDrawElements
+
+`glDrawElements` allows you to also render primitives from array data, but the difference is that it is designed for use with data in a format similar to an indexed face set. With `glDrawArrays`, OpenGL pulls data from the enabled arrays in order, vertex 0, then vertex 1, then vertex 2, and so on. With `glDrawElements`, you provide a list of vertex numbers. OpenGL will go through the list of vertex numbers, pulling data for the specified vertices from the arrays. This allows us to further reduce the amount of code we need when doing things like indexed face sets.
+
+For `glDrawElements`, you'll need an array to store the vertex numbers, which can be 8, 16, or 32 bit positive integers. Everything else remains the same as `glDrawArrays`. It takes the following arguments:
+
+```C
+void glDrawElements( int primitiveType, int vertexCount, int dataType, void *array)
+```
+
+* `array`
+	* Array of vertex numbers.
+* `dataType`
+	* Data type of values in `array`
+		* `GL_UNSIGNED_BYTE`
+		* `GL_UNSIGNED_SHORT`
+		* `GL_UNSIGNED_INT`
+
+Now, we can convert our stellated dodecahedron program above to use `glDrawElements`:
+
+```C
+glVertexPointer(3, GL_DOUBLE, 0, dodecVerticesArray);  
+glColorPointer(3, GL_FLOAT, 0, dodecTrianglesColor);  
+  
+glEnableClientState( GL_VERTEX_ARRAY );  
+glEnableClientState( GL_COLOR_ARRAY );  
+  
+glDrawElements(GL_TRIANGLE_STRIP, 180, GL_UNSIGNED_INT, dodecTrianglesArray);
+```
 
 # References
 
 1. [Computer Graphics and Visualisation (wits.ac.za)](https://courses.ms.wits.ac.za/~branden/CGV/_book/index.html)
-2. 
+2. [Chapter 8 OpenGL | Computer Graphics and Visualisation (wits.ac.za)](https://courses.ms.wits.ac.za/~branden/CGV/_book/opengl.html)
+3. [Chapter 10 The Programmable Pipeline | Computer Graphics and Visualisation (wits.ac.za)](https://courses.ms.wits.ac.za/~branden/CGV/_book/pipe.html)
+4. [glDrawArrays - OpenGL 4 Reference Pages (khronos.org)](https://registry.khronos.org/OpenGL-Refpages/gl4/html/glDrawArrays.xhtml)
+5. [Introduction to Computer Graphics, Section 3.4 -- Polygonal Meshes and glDrawArrays (hws.edu)](https://math.hws.edu/graphicsbook/c3/s4.html#:~:text=With%20glDrawArrays%2C%20OpenGL%20pulls%20data,specified%20vertices%20from%20the%20arrays.)
