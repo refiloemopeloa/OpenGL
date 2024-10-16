@@ -888,6 +888,74 @@ glEnableClientState( GL_COLOR_ARRAY );
 glDrawElements(GL_TRIANGLE_STRIP, 180, GL_UNSIGNED_INT, dodecTrianglesArray);
 ```
 
+## Keyboard Input
+
+One thing you may have noticed is that when an object is rendered, we can't really interact with it. To get around this, we can pass instructions through the keyboard.
+
+First, let's initialize variables that we can use to control the x, y, and z positions of the object:
+
+```C
+int rotateX = 0; 
+int rotateY = 0;  
+int rotateZ = 0; 
+```
+
+Then, let's create a function that handles keyboard commands:
+
+```C
+void doSpecialKey(int key, int x, int y) {  
+    // called when a special key is pressed  
+    int redraw = 1;  
+    if (key == GLUT_KEY_LEFT)  
+        rotateY -= 15;  
+    else if (key == GLUT_KEY_RIGHT)  
+        rotateY += 15;  
+    else if (key == GLUT_KEY_DOWN)  
+        rotateX += 15;  
+    else if (key == GLUT_KEY_UP)  
+        rotateX -= 15;  
+    else if (key == GLUT_KEY_PAGE_UP)  
+        rotateZ += 15;  
+    else if (key == GLUT_KEY_PAGE_DOWN)  
+        rotateZ -= 15;  
+    else if (key == GLUT_KEY_HOME)  
+        rotateX = rotateY = rotateZ = 0;  
+    else  
+        redraw = 0;  
+    if (redraw)  
+        glutPostRedisplay(); // will repaint the window  
+}
+```
+
+The buttons you can use are:
+* <button>Up</button>
+* <button>Down</button>
+* <button>Left</button>
+* <button>Right</button>
+* <button>PgUp</button>
+* <button>PgDn</button>
+* <button>Home</button>
+	* resets the object to its original position
+
+To change the rotation speed, simply adjust the 15 that is being added or subtracted.
+
+Once you've done that, add the following transformations to your `draw()` function:
+
+```C
+    glRotatef(rotateZ, 0, 0, 1); // Apply rotations to complete object.  
+    glRotatef(rotateY, 0, 1, 0);  
+    glRotatef(rotateX, 1, 0, 0);
+```
+
+Finally, pass the function to the `glutSpecialFunc`:
+
+```C
+glutSpecialFunc(doSpecialKey); // doSpecialKey() is called to process other keys (such as arrows).
+```
+
+Now, you're object is able to move.
+
+
 # References
 
 1. [Computer Graphics and Visualisation (wits.ac.za)](https://courses.ms.wits.ac.za/~branden/CGV/_book/index.html)
